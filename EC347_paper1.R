@@ -80,17 +80,18 @@ non_colonies <- fdi2 %>%
 
 
 fdi2 <- rbind(colonies, non_colonies)
-View(fdi2)
-
 fdi2 <- fdi2[
   with(fdi2, order(fdi2$Country, fdi2$Time)),
 ]
 View(fdi2)
 
+##### Removing NA Country Values #####
 
 fdi2_clean <- fdi2[!is.na(fdi2$Country),]
 
 View(fdi2_clean)
+
+##### Creating a change in GDP variable #####
 
 for (i in 2:nrow(fdi2_clean)) {
   if(fdi2_clean[i,2] == fdi2_clean[i-1,2]){
@@ -100,19 +101,23 @@ for (i in 2:nrow(fdi2_clean)) {
   }
 }
 
-
 View(fdi2_clean)
 
 colnames(fdi2_clean)[11] <- "delta_gdp"
 View(fdi2_clean)
+
+##### Removing all NA values #####
 
 fdi_clean <- na.omit(fdi2_clean)
 
 View(fdi_clean %>%
        filter(colony == 1))
 
+##### Creating the Econometric model for all countries #####
+
 summary(lm(delta_gdp ~ FDI + Inflation + TO + colony + SLE + colony:FDI, data = fdi_clean))
 
+##### Choosing the Clean Subset of Former Colonies and Non-Colonies #####
 
 colonies <- fdi_clean %>%
   filter(colony == 1)
@@ -136,11 +141,17 @@ View(colonies)
 nrow(colonies)
 nrow(non_colonies)
 
+##### Creating the First Econometric Model #####
+
 summary(lm(delta_gdp ~ FDI, data = colonies))
 summary(lm(delta_gdp ~ FDI, data = non_colonies))
 
+##### Creating the Second Econometric Model #####
+
 summary(lm(delta_gdp ~ FDI + Inflation + TO + SLE + Corruption + TO:FDI + Corruption:FDI + SLE:FDI + Inflation:FDI, data = colonies))
 summary(lm(delta_gdp ~ FDI + Inflation + TO + SLE + Corruption + TO:FDI + Corruption:FDI + SLE:FDI + Inflation:FDI, data = non_colonies))
+
+##### Showing the Summary Statistics #####
 
 fdi_clean <- rbind(colonies, non_colonies)
 
